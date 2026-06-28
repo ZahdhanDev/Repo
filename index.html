@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lezy Bot - Premium Web Simulation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ==========================================================================
+           1. RESET & VARIABLES (Neon Dark Glassmorphism)
+           ========================================================================== */
+        :root {
+            --bg-main: #0b0f19;
+            --bg-side: rgba(17, 24, 39, 0.75);
+            --glass-bg: rgba(31, 41, 55, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent-blue: #00d2ff;
+            --accent-purple: #9d4edd;
+            --neon-glow: 0 0 15px rgba(0, 210, 255, 0.5);
+            --bubble-user: #005f73;
+            --bubble-bot: rgba(37, 42, 52, 0.85);
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'Space Grotesk', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-sans);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #1a1c29, var(--bg-main));
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Scrollbar Custom */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-blue);
+        }
+
+        .hidden { display: none !important; }
+
+        /* ==========================================================================
+           2. AUTHENTICATION PAGE
+           ========================================================================== */
+        .auth-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .auth-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            text-align: center;
+        }
+
+        .bot-logo-glow {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            display: inline-block;
+            filter: drop-shadow(0 0 10px var(--accent-blue));
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        .auth-header h1 {
+            font-family: var(--font-mono);
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            color: #fff;
+        }
+
+        .auth-header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--neon-glow);
+        }
+
+        .auth-footer {
+            margin-top: 25px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .highlight { color: var(--accent-blue); font-weight: 600; }
+
+        /* ==========================================================================
+           3. MAIN LAYOUT (CHAT WORKSPACE)
+           ========================================================================== */
+        .app-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            background: var(--bg-main);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: var(--bg-side);
+            border-right: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .user-avatar-main {
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .user-meta-main h3 { font-size: 1.1rem; font-weight: 600; }
+        .badge-rank {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            background: linear-gradient(90deg, #ffd700, #ffa500);
+            border-radius: 20px;
+            color: #000;
+            font-weight: 700;
+            display: inline-block;
+            margin-top: 2px;
+        }
+
+        .sidebar-stats {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .stat-box {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 12px 16px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon { font-size: 1.4rem; }
+        .stat-details small { color: var(--text-muted); font-size: 0.75rem; display: block; }
+        .stat-details strong { font-size: 1rem; color: #fff; }
+
+        .sidebar-menu-info {
+            margin-top: auto;
+            background: rgba(0, 210, 255, 0.05);
+            border: 1px solid rgba(0, 210, 255, 0.15);
+            padding: 15px;
+            border-radius: 14px;
+            font-size: 0.85rem;
+        }
+
+        .sidebar-menu-info h4 { color: var(--accent-blue); margin-bottom: 5px; }
+        .cmd-highlight { background: rgba(255,255,255,0.15); padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #fff; }
+
+        .status-badges { display: flex; gap: 5px; margin-top: 10px; }
+        .badge { font-size: 0.7rem; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
+        .bg-dark { background: rgba(0,0,0,0.4); color: var(--text-muted); border: 1px solid var(--glass-border); }
+        .bg-premium { background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid #facc15; }
+        .bg-vvip { background: rgba(236, 72, 153, 0.2); color: #f472b6; border: 1px solid #f472b6; }
+
+        .btn-logout {
+            margin-top: 15px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .btn-logout:hover { background: #ef4444; color: white; }
+
+        /* ==========================================================================
+           4. CHAT WINDOW COMPONENTS
+           ========================================================================== */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle at bottom left, #111827, #070a12);
+            position: relative;
+        }
+
+        .chat-header {
+            padding: 15px 25px;
+            background: rgba(17, 24, 39, 0.6);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .chat-header-left { display: flex; align-items: center; gap: 15px; }
+        .bot-avatar {
+            width: 44px;
+            height: 44px;
+            background: rgba(0, 210, 255, 0.1);
+            border: 1px solid var(--accent-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
+        }
+
+        .bot-info h2 { font-size: 1.1rem; display: flex; align-items: center; gap: 8px; font-weight: 600; }
+        .online-indicator { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #22c55e; }
+        .bot-info p { font-size: 0.75rem; color: var(--text-muted); }
+        
+        .chat-header-right { display: flex; align-items: center; gap: 15px; }
+        .system-time { font-family: var(--font-mono); color: var(--text-muted); font-size: 0.9rem; }
+
+        /* Tombol Fullscreen Modern */
+        .btn-fullscreen {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .btn-fullscreen:hover {
+            background: var(--accent-blue);
+            color: #000;
+            box-shadow: var(--neon-glow);
+            transform: translateY(-1px);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .msg-wrapper {
+            display: flex;
+            width: 100%;
+            animation: msgSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .msg-wrapper.user { justify-content: flex-end; }
+        .msg-wrapper.bot { justify-content: flex-start; }
+
+        .msg-bubble {
+            max-width: 75%;
+            padding: 14px 18px;
+            border-radius: 18px;
+            position: relative;
+            line-height: 1.5;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+        }
+
+        .msg-wrapper.user .msg-bubble {
+            background: var(--bubble-user);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0, 95, 115, 0.3);
+        }
+
+        .msg-wrapper.bot .msg-bubble {
+            background: var(--bubble-bot);
+            border: 1px solid var(--glass-border);
+            color: #e5e7eb;
+            border-bottom-left-radius: 4px;
+            font-family: monospace;
+        }
+
+        .msg-timestamp {
+            display: block;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.35);
+            text-align: right;
+            margin-top: 6px;
+        }
+
+        .typing-dots { display: flex; gap: 5px; padding: 6px 4px; align-items: center; }
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            animation: dotPulse 1.4s infinite ease-in-out both;
+        }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        .chat-input-area {
+            padding: 20px 25px;
+            background: rgba(11, 15, 25, 0.8);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .chat-form {
+            display: flex;
+            gap: 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            padding: 6px 8px 6px 18px;
+            border-radius: 16px;
+            align-items: center;
+        }
+
+        .chat-form input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 1rem;
+            padding: 10px 0;
+        }
+        .chat-form input:focus { outline: none; }
+
+        .btn-send {
+            background: var(--accent-blue);
+            color: #000;
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+        .btn-send:hover { transform: scale(1.05); filter: brightness(1.1); box-shadow: var(--neon-glow); }
+
+        /* ==========================================================================
+           5. DYNAMIC FULLSCREEN CSS MODIFIER
+           Menghilangkan bagian atas layar (Header) dan Sidebar saat Web Fullscreen
+           ========================================================================== */
+        .clean-fullscreen .sidebar {
+            display: none !important;
+        }
+        .clean-fullscreen .chat-header {
+            padding: 8px 25px; /* Mengecilkan header agar area chat super maksimal */
+            background: rgba(11, 15, 25, 0.9);
+        }
+        /* Jika ingin menyembunyikan TOTAL info header atas saat fullscreen, aktifkan baris bawah ini: */
+        /* .clean-fullscreen .chat-header { display: none !important; } */
+
+        /* ==========================================================================
+           6. ANIMATIONS & RESPONSIVE
+           ========================================================================== */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.97); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px var(--accent-blue)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 20px var(--accent-purple)); }
+        }
+        @keyframes msgSlideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes dotPulse {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .msg-bubble { max-width: 88%; }
+            .chat-header { padding: 12px 15px; }
+            .chat-messages { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="auth-container" class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="bot-logo-glow">🤖</div>
+                <h1>LEZY BOT</h1>
+                <p>Simulasi Chat Bot Modern & Game Engine</p>
+            </div>
+            <form id="auth-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" autocomplete="off" placeholder="Buat / Masukkan username..." required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Masukkan password..." required>
+                </div>
+                <button type="submit" id="btn-auth" class="btn-primary">Masuk / Daftar</button>
+            </form>
+            <div class="auth-footer">
+                <p>Owner: <span class="highlight">DanzzSkyy</span> | Version: <span class="highlight">v1.0.0</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container" class="app-container hidden">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="user-avatar-main">👑</div>
+                <div class="user-meta-main">
+                    <h3 id="side-username">User</h3>
+                    <span id="side-rank" class="badge-rank">Pemula</span>
+                </div>
+            </div>
+            <div class="sidebar-stats">
+                <div class="stat-box">
+                    <span class="stat-icon">💰</span>
+                    <div class="stat-details">
+                        <small>Koin</small>
+                        <strong id="side-coin">0</strong>
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-icon">⚡</span>
+                    <div class="stat-details">
+                        <small>Limit</small>
+                        <strong id="side-limit">20/20</strong>
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-icon">📈</span>
+                    <div class="stat-details">
+                        <small>Level (EXP)</small>
+                        <strong id="side-level">Lv. 1 (0)</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="sidebar-menu-info">
+                <h4>💡 Panduan Command</h4>
+                <p>Ketik <span class="cmd-highlight">.menu</span> di kolom pesan untuk membuka panel kontrol.</p>
+                <div class="status-badges">
+                    <span id="badge-prem" class="badge bg-dark">Premium: No</span>
+                    <span id="badge-vvip" class="badge bg-dark">VVIP: No</span>
+                </div>
+            </div>
+            <button id="btn-logout" class="btn-logout">Keluar Sesi</button>
+        </aside>
+
+        <main class="chat-area">
+            <header class="chat-header">
+                <div class="chat-header-left">
+                    <div class="bot-avatar">🤖</div>
+                    <div class="bot-info">
+                        <h2>Lezy Bot <span class="online-indicator"></span></h2>
+                        <p>Owner: <span>DanzzSkyy</span> • Versi: <span>v1.0.0</span></p>
+                    </div>
+                </div>
+                <div class="chat-header-right">
+                    <span class="system-time" id="live-clock">00:00</span>
+                    <button id="btn-fullscreen-toggle" class="btn-fullscreen">
+                        <span id="fs-icon">📺</span> <span id="fs-text">Layar Penuh</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="chat-messages" id="chat-messages-box"></div>
+
+            <footer class="chat-input-area">
+                <form id="chat-form-submit" class="chat-form">
+                    <input type="text" id="chat-input" placeholder="Masukkan perintah di sini..." autocomplete="off">
+                    <button type="submit" class="btn-send">
+                        <svg viewBox="0 0 24 24" width="22" height="22">
+                            <path fill="currentColor" d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/>
+                        </svg>
+                    </button>
+                </form>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let activeGame = null;
+
+        const LEVEL_MAP = [
+            { level: 1, expCap: 0, rank: "Pemula" },
+            { level: 2, expCap: 100, rank: "Bronze" },
+            { level: 3, expCap: 250, rank: "Silver" },
+            { level: 4, expCap: 500, rank: "Gold" },
+            { level: 5, expCap: 900, rank: "Platinum" },
+            { level: 6, expCap: 1400, rank: "Diamond" },
+            { level: 7, expCap: 2000, rank: "Master" },
+            { level: 8, expCap: 3000, rank: "Grandmaster" },
+            { level: 9, expCap: 5000, rank: "Legend" }
+        ];
+
+        const PRIMBON_DATA = {
+            "arti nama": "Nama Anda memancarkan energi positif, mencerminkan kepemimpinan, intuisi tinggi, dan potensi keberhasilan finansial besar.",
+            "ramalan jodoh": "Jodoh Anda memiliki sifat sabar dan penuh pengertian. Keharmonisan akan terwujud melalui transparansi komunikasi.",
+            "hari baik": "Hari Rabu dan Jumat adalah waktu terbaik bagi Anda di minggu ini untuk memulai negosiasi atau hal produktif.",
+            "hari lahir": "Karakteristik hari lahir Anda menandakan ambisi kuat, kreativitas tanpa batas, serta daya tahan tinggi terhadap stres.",
+            "zodiak": "Bintang Anda menunjukkan lonjakan finansial dalam waktu dekat. Ada keberuntungan tak terduga menjelang akhir pekan.",
+            "shio": "Tahun ini menuntut fokus pada investasi jangka panjang. Hindari spekulasi berisiko tinggi demi kestabilan koin Anda.",
+            "mimpi": "Mimpi yang baru-baru ini terjadi menandakan pembersihan energi negatif dan pembukaan gerbang karier baru.",
+            "arti warna": "Warna biru neon mencerminkan kecerdasan masa depan, stabilitas emosi, eksklusivitas, serta visioner tinggi.",
+            "arti angka": "Angka keberuntungan Anda adalah 7 dan 8, membawa perlindungan kosmis dan kestabilan materialistis."
+        };
+
+        const GAME_BANK = {
+            1: { name: "Tebak Angka", generate: () => { const ans = Math.floor(Math.random() * 10) + 1; return { q: "Tebak angka rahasia antara 1 sampai 10!", a: ans.toString() }; } },
+            2: { name: "Tebak Emoji", data: [{q: "🐱 + 👓 = (Kucing kantoran / Kucing rumahan)", a: "kucing kantoran"}, {q: "🍎 + 📱 = (Nama Smartphone)", a: "iphone"}] },
+            3: { name: "Tebak Hewan", data: [{q: "Hewan mamalia terbesar di lautan?", a: "paus"}, {q: "Hewan berkantung khas benua Australia?", a: "kanguru"}] },
+            4: { name: "Tebak Bendera", data: [{q: "Bendera dengan warna Merah Putih secara horizontal?", a: "indonesia"}, {q: "Bendera lingkaran merah terpusat berlatar putih?", a: "jepang"}] },
+            5: { name: "Tebak Buah", data: [{q: "Buah berkulit duri tajam beraroma menyengat?", a: "durian"}, {q: "Buah merah berpori biji luar, berasa asam manis?", a: "stroberi"}] },
+            6: { name: "Matematika", generate: () => { const n1 = Math.floor(Math.random() * 40) + 10; const n2 = Math.floor(Math.random() * 30) + 5; return { q: `Berapakah hasil kalkulasi dari: ${n1} + ${n2} ?`, a: (n1+n2).toString() }; } },
+            7: { name: "Susun Kata", data: [{q: "A-K-T-I-R-A-P (Petunjuk: Merakit Komputer)", a: "prakit"}, {q: "O-T-B-O-R (Petunjuk: Otomasi AI)", a: "robot"}] },
+            8: { name: "Benar Salah", data: [{q: "Planet Mars adalah planet terdekat dari Matahari? (benar/salah)", a: "salah"}, {q: "Air membeku pada suhu 0° Celsius? (benar/salah)", a: "benar"}] },
+            9: { name: "Tebak Warna", data: [{q: "Pencampuran pigmen warna Biru dan Kuning membuahkan warna?", a: "hijau"}, {q: "Warna terbawah pada lampu lalu lintas jalan raya?", a: "hijau"}] },
+            10: { name: "Tebak Negara", data: [{q: "Negara kincir angin dengan bendera Merah Putih Biru?", a: "belanda"}, {q: "Negara yang beribu kota di Tokyo?", a: "jepang"}] }
+        };
+
+        // DOM Catchers
+        const authContainer = document.getElementById('auth-container');
+        const appContainer = document.getElementById('app-container');
+        const authForm = document.getElementById('auth-form');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const chatMessagesBox = document.getElementById('chat-messages-box');
+        const chatInput = document.getElementById('chat-input');
+        const chatFormSubmit = document.getElementById('chat-form-submit');
+        const liveClock = document.getElementById('live-clock');
+
+        const sideUsername = document.getElementById('side-username');
+        const sideRank = document.getElementById('side-rank');
+        const sideCoin = document.getElementById('side-coin');
+        const sideLimit = document.getElementById('side-limit');
+        const sideLevel = document.getElementById('side-level');
+        const badgePrem = document.getElementById('badge-prem');
+        const badgeVvip = document.getElementById('badge-vvip');
+        const btnLogout = document.getElementById('btn-logout');
+        
+        // Fullscreen Catchers
+        const btnFullscreenToggle = document.getElementById('btn-fullscreen-toggle');
+        const fsIcon = document.getElementById('fs-icon');
+        const fsText = document.getElementById('fs-text');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setInterval(() => {
+                const now = new Date();
+                liveClock.textContent = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            }, 1000);
+            checkSession();
+        });
+
+        function checkSession() {
+            const activeSession = localStorage.getItem('lezy_bot_session');
+            if (activeSession) {
+                loadUserData(activeSession);
+            } else {
+                authContainer.classList.remove('hidden');
+                appContainer.classList.add('hidden');
+            }
+        }
+
+        authForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!username || !password) return;
+
+            let account = JSON.parse(localStorage.getItem(`lezy_user_${username}`));
+
+            if (!account) {
+                account = {
+                    username: username, password: password,
+                    coin: 0, limit: 20, maxLimit: 20,
+                    level: 1, exp: 0, rank: "Pemula",
+                    premium: "Tidak", vvip: "Tidak", historyChat: []
+                };
+                localStorage.setItem(`lezy_user_${username}`, JSON.stringify(account));
+            } else if (account.password !== password) {
+                alert("Autentikasi Gagal! Password salah.");
+                return;
+            }
+
+            localStorage.setItem('lezy_bot_session', username);
+            loadUserData(username);
+        });
+
+        btnLogout.addEventListener('click', () => {
+            localStorage.removeItem('lezy_bot_session');
+            currentUser = null;
+            chatMessagesBox.innerHTML = '';
+            checkSession();
+        });
+
+        function loadUserData(username) {
+            currentUser = JSON.parse(localStorage.getItem(`lezy_user_${username}`));
+            refreshUI();
+
+            authContainer.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+
+            chatMessagesBox.innerHTML = '';
+            if (currentUser.historyChat && currentUser.historyChat.length > 0) {
+                currentUser.historyChat.forEach(c => renderBubble(c.text, c.sender, c.time));
+            } else {
+                executeBotReply(`Sistem Berhasil Terhubung.\nHalo @${currentUser.username}, bot siap melayani Anda.\nKetik .menu untuk melihat navigasi penuh.`);
+            }
+            setTimeout(scrollChat, 100);
+        }
+
+        function refreshUI() {
+            if (!currentUser) return;
+            sideUsername.textContent = currentUser.username;
+            sideRank.textContent = currentUser.rank;
+            sideCoin.textContent = currentUser.coin;
+            sideLimit.textContent = `${currentUser.limit}/${currentUser.maxLimit}`;
+            sideLevel.textContent = `Lv. ${currentUser.level} (${currentUser.exp} EXP)`;
+
+            badgePrem.className = currentUser.premium === "Ya" ? "badge bg-premium" : "badge bg-dark";
+            badgePrem.textContent = currentUser.premium === "Ya" ? "Premium: Aktif" : "Premium: No";
+
+            badgeVvip.className = currentUser.vvip === "Ya" ? "badge bg-vvip" : "badge bg-dark";
+            badgeVvip.textContent = currentUser.vvip === "Ya" ? "VVIP: Aktif" : "VVIP: No";
+        }
+
+        function syncDB() {
+            if (!currentUser) return;
+            localStorage.setItem(`lezy_user_${currentUser.username}`, JSON.stringify(currentUser));
+            refreshUI();
+        }
+
+        function renderBubble(text, sender, timeStr = null) {
+            const time = timeStr || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('msg-wrapper', sender);
+
+            const bubble = document.createElement('div');
+            bubble.classList.add('msg-bubble');
+            bubble.textContent = text;
+
+            const ts = document.createElement('span');
+            ts.classList.add('msg-timestamp');
+            ts.textContent = time;
+
+            bubble.appendChild(ts);
+            wrapper.appendChild(bubble);
+            chatMessagesBox.appendChild(wrapper);
+            scrollChat();
+
+            if (!timeStr) {
+                currentUser.historyChat.push({ text, sender, time });
+                if (currentUser.historyChat.length > 50) currentUser.historyChat.shift();
+                syncDB();
+            }
+        }
+
+        function scrollChat() { chatMessagesBox.scrollTop = chatMessagesBox.scrollHeight; }
+
+        function executeBotReply(rawText) {
+            const indicator = document.createElement('div');
+            indicator.classList.add('msg-wrapper', 'bot');
+            indicator.innerHTML = `<div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+            chatMessagesBox.appendChild(indicator);
+            scrollChat();
+
+            setTimeout(() => {
+                indicator.remove();
+                const formatted = `━━━━━━━━━━━━━━━━
+🤖 Lezy Bot
+👑 Owner : DanzzSkyy
+📦 Version : v1.0.0
+
+${rawText}
+━━━━━━━━━━━━━━━━`;
+                renderBubble(formatted, 'bot');
+            }, 750);
+        }
+
+        chatFormSubmit.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const msg = chatInput.value.trim();
+            if (!msg) return;
+
+            renderBubble(msg, 'user');
+            chatInput.value = '';
+            parseCommand(msg);
+        });
+
+        function parseCommand(str) {
+            const token = str.toLowerCase();
+
+            if (activeGame) {
+                handleGameMove(token);
+                return;
+            }
+
+            if (currentUser.limit <= 0 && currentUser.vvip !== "Ya" && token !== ".profile" && token !== ".shop" && !token.startsWith(".shop ")) {
+                executeBotReply("Akses Ditolak! Limit kuota harian Anda telah habis (0). Silakan kunjungi `.shop` untuk melakukan pengisian ulang.");
+                return;
+            }
+
+            if (token.startsWith(".primbon ")) {
+                const sub = token.replace(".primbon ", "").trim();
+                if (PRIMBON_DATA[sub]) {
+                    consumeLimit();
+                    executeBotReply(`🔮 PRIMBON - ${sub.toUpperCase()}\n\nHasil Ramalan:\n${PRIMBON_DATA[sub]}`);
+                } else {
+                    executeBotReply("Sub-fitur primbon tidak valid. Ketik `.primbon` untuk melihat opsi terdaftar.");
+                }
+                return;
+            }
+
+            if (token.startsWith(".shop ")) {
+                const itemNum = token.replace(".shop ", "").trim();
+                handlePurchase(itemNum);
+                return;
+            }
+
+            switch (token) {
+                case '.menu':
+                    consumeLimit();
+                    executeBotReply(`🤖 LEZY BOT
+
+Halo @${currentUser.username}
+
+Main Menu
+
+🎮 Game Menu
+🔮 Primbon Menu
+👤 Profile Menu
+🛒 Shop Menu
+💰 Coin Menu
+⭐ Premium Menu
+📊 Rank Menu
+⚙️ Settings Menu
+📜 Info Menu
+❓ Help Menu
+
+Ketik salah satu command di bawah
+
+.game
+.primbon
+.profile
+.shop
+.coin
+.rank
+.help
+.info`);
+                    break;
+
+                case '.profile':
+                    executeBotReply(`👤 INTERACTIVE PROFILE
+
+Username : ${currentUser.username}
+Coin     : ${currentUser.coin}
+Limit    : ${currentUser.limit}/${currentUser.maxLimit}
+Level    : ${currentUser.level}
+Exp      : ${currentUser.exp}
+Rank     : ${currentUser.rank}
+Status   : Active
+Premium  : ${currentUser.premium}
+VVIP     : ${currentUser.vvip}
+Owner    : DanzzSkyy
+Version  : v1.0.0`);
+                    break;
+
+                case '.coin':
+                    executeBotReply(`💰 INFORMASI DOMPET\n\nTotal kepemilikan aset koin Anda saat ini:\n👉 ${currentUser.coin} Coin`);
+                    break;
+
+                case '.rank':
+                    executeBotReply(`📊 TIER RANKING SYSTEM
+
+Kumpulkan koin game untuk naik Tier:
+1. Pemula (0 Coin)
+2. Bronze (100 Coin)
+3. Silver (250 Coin)
+4. Gold (500 Coin)
+5. Platinum (1000 Coin)
+6. Diamond (2000 Coin)
+7. Master (3500 Coin)
+8. Grandmaster (5000 Coin)
+9. Legend (7500+ Coin)
+
+Peringkat Anda Saat Ini: [ ${currentUser.rank} ]`);
+                    break;
+
+                case '.help':
+                    executeBotReply(`❓ PANDUAN CARA PENGGUNAAN
+
+1. Gunakan prefiks tanda titik [ . ] di awal perintah.
+2. Contoh: Ketik .game lalu kirim untuk memunculkan daftar game.
+3. Jawab pertanyaan game secara langsung tanpa tanda titik.
+4. Pastikan Limit mencukupi sebelum bermain.`);
+                    break;
+
+                case '.info':
+                    executeBotReply(`📜 DATA SPESIFIKASI BOT
+
+Nama Bot      : Lezy Bot
+Owner         : DanzzSkyy
+Version       : v1.0.0
+Developer     : Full Stack Web Specialist
+Tanggal dibuat: 27 Juni 2026
+Total Command : 10 Core Engine Commands`);
+                    break;
+
+                case '.primbon':
+                    consumeLimit();
+                    executeBotReply(`🔮 PRIMBON JAVA MENU
+
+Gunakan command di bawah (Sertakan sub-opsi):
+• .primbon Arti Nama
+• .primbon Ramalan Jodoh
+• .primbon Hari Baik
+• .primbon Hari Lahir
+• .primbon Zodiak
+• .primbon Shio
+• .primbon Mimpi
+• .primbon Arti Warna
+• .primbon Arti Angka
+
+Contoh penulisan: .primbon Arti Nama`);
+                    break;
+
+                case '.shop':
+                    executeBotReply(`━━━━━━━━━━━━━━
+🛒 LEZY CENTRAL SHOP
+
+Silakan transaksi dengan ketik: .shop [nomor]
+Contoh: .shop 3
+
+1. Beli VVIP Upgrade
+   Harga: 1500 Coin
+   Benefit: Limit +999, Tag VVIP, Tanpa Potongan Limit.
+
+2. Beli Premium Status
+   Harga: 700 Coin
+   Benefit: Booster Bonus Coin +5 per kemenangan game.
+
+3. Tambah Paket Limit +5
+   Harga: 250 Coin
+
+4. Tambah Paket Limit +10
+   Harga: 450 Coin
+
+5. Ganti Nama Identitas (Random Baru)
+   Harga: 100 Coin
+━━━━━━━━━━━━━━`);
+                    break;
+
+                case '.game':
+                    executeBotReply(`🎮 DAFTAR GAME ARENA (100% PLAYABLE)
+
+Pilih game dengan mengetik perintah: .game [nomor]
+Contoh: .game 1
+
+1. Tebak Angka
+2. Tebak Emoji
+3. Tebak Hewan
+4. Tebak Bendera
+5. Tebak Buah
+6. Matematika
+7. Susun Kata
+8. Benar Salah
+9. Tebak Warna
+10. Tebak Negara
+
+Ketik nomor pilihan Anda sekarang!`);
+                    break;
+
+                default:
+                    if (token.startsWith(".game ")) {
+                        const target = parseInt(token.replace(".game ", "").trim());
+                        if (target >= 1 && target <= 10) {
+                            launchGame(target);
+                        } else {
+                            executeBotReply("Nomor arena game tidak terdaftar. Pilih opsi 1-10.");
+                        }
+                    } else {
+                        executeBotReply(`Perintah tidak dikenal / tidak valid.\nKetik .menu untuk melihat bantuan navigasi.`);
+                    }
+                    break;
+            }
+        }
+
+        function launchGame(id) {
+            const meta = GAME_BANK[id];
+            let questionObj;
+
+            if (meta.generate) {
+                questionObj = meta.generate();
+            } else {
+                const randIndex = Math.floor(Math.random() * meta.data.length);
+                questionObj = meta.data[randIndex];
+            }
+
+            activeGame = {
+                id: id,
+                name: meta.name,
+                question: questionObj.q,
+                answer: questionObj.a.toLowerCase()
+            };
+
+            executeBotReply(`🎮 MODUL GAME: ${activeGame.name} DIMULAI!\n\nPertanyaan:\n${activeGame.question}\n\n[ Silakan langsung ketik jawaban Anda di kolom chat di bawah ]`);
+        }
+
+        function handleGameMove(answer) {
+            if (answer === activeGame.answer) {
+                const rewards = [15, 20, 25, 30, 35, 40, 45, 50];
+                let baseReward = rewards[Math.floor(Math.random() * rewards.length)];
+                
+                if(currentUser.premium === "Ya") baseReward += 5;
+
+                currentUser.coin += baseReward;
+                currentUser.exp += 35;
+                
+                if (currentUser.vvip !== "Ya") {
+                    currentUser.limit = Math.max(0, currentUser.limit - 1);
+                }
+
+                processLevelUp();
+                processRankTier();
+
+                executeBotReply(`🎉 SELAMAT JAWABAN ANDA BENAR!\n\nGame: ${activeGame.name}\nJawaban: ${activeGame.answer.toUpperCase()}\nReward: +${baseReward} Coin & +35 EXP!\n\nLimit Anda terpotong 1.`);
+                activeGame = null;
+            } else {
+                executeBotReply(`❌ JAWABAN ANDA SALAH!\n\nSilakan coba lagi / ketik jawaban lain.\n(Ketik .menu jika menyerah dan ingin membatalkan sesi game)`);
+            }
+            syncDB();
+        }
+
+        function consumeLimit() {
+            if (currentUser.vvip === "Ya") return;
+            currentUser.limit = Math.max(0, currentUser.limit - 1);
+            syncDB();
+        }
+
+        function processLevelUp() {
+            let currentLvl = currentUser.level;
+            let targetCap = currentLvl * 150;
+
+            if (currentUser.exp >= targetCap) {
+                currentUser.level += 1;
+                currentUser.exp = currentUser.exp - targetCap;
+                currentUser.maxLimit += 5;
+                currentUser.limit = currentUser.maxLimit;
+            }
+        }
+
+        function processRankTier() {
+            const coins = currentUser.coin;
+            let currentTier = "Pemula";
+
+            if (coins >= 7500) currentTier = "Legend";
+            else if (coins >= 5000) currentTier = "Grandmaster";
+            else if (coins >= 3500) currentTier = "Master";
+            else if (coins >= 2000) currentTier = "Diamond";
+            else if (coins >= 1000) currentTier = "Platinum";
+            else if (coins >= 500) currentTier = "Gold";
+            else if (coins >= 250) currentTier = "Silver";
+            else if (coins >= 100) currentTier = "Bronze";
+
+            currentUser.rank = currentTier;
+        }
+
+        function handlePurchase(id) {
+            switch(id) {
+                case '1':
+                    if(currentUser.coin >= 1500) {
+                        currentUser.coin -= 1500;
+                        currentUser.vvip = "Ya";
+                        currentUser.maxLimit += 999;
+                        currentUser.limit += 999;
+                        executeBotReply("💳 TRANSAKSI BERHASIL!\n\nStatus Akun dinaikkan menjadi VVIP.\nAnda mendapatkan kebebasan kuota limit (+999) permanen.");
+                    } else {
+                        executeBotReply("❌ TRANSAKSI GAGAL!\n\nSaldo Koin Anda tidak mencukupi untuk membeli lisensi VVIP.");
+                    }
+                    break;
+                case '2':
+                    if(currentUser.coin >= 700) {
+                        currentUser.coin -= 700;
+                        currentUser.premium = "Ya";
+                        executeBotReply("💳 TRANSAKSI BERHASIL!\n\nStatus Akun dinaikkan menjadi PREMIUM.\nSekarang Anda mendapat bonus tambahan +5 Coin ekstra setiap kemenangan game.");
+                    } else {
+                        executeBotReply("❌ TRANSAKSI GAGAL!\n\nSaldo Koin Anda tidak mencukupi untuk membeli lisensi Premium.");
+                    }
+                    break;
+                case '3':
+                    if(currentUser.coin >= 250) {
+                        currentUser.coin -= 250;
+                        currentUser.limit += 5;
+                        executeBotReply("💳 TRANSAKSI BERHASIL!\n\nKlaim Paket Limit +5 Sukses. Energi Anda telah pulih.");
+                    } else {
+                        executeBotReply("❌ TRANSAKSI GAGAL!\n\nKoin tidak mencukupi untuk menambah paket limit.");
+                    }
+                    break;
+                case '4':
+                    if(currentUser.coin >= 450) {
+                        currentUser.coin -= 450;
+                        currentUser.limit += 10;
+                        executeBotReply("💳 TRANSAKSI BERHASIL!\n\nKlaim Paket Limit +10 Sukses. Energi Anda telah pulih optimal.");
+                    } else {
+                        executeBotReply("❌ TRANSAKSI GAGAL!\n\nKoin tidak mencukupi untuk menambah paket limit.");
+                    }
+                    break;
+                case '5':
+                    if(currentUser.coin >= 100) {
+                        currentUser.coin -= 100;
+                        const randID = Math.floor(Math.random() * 9000) + 1000;
+                        const oldName = currentUser.username;
+                        const newName = `User_${randID}`;
+                        
+                        localStorage.removeItem(`lezy_user_${oldName}`);
+                        currentUser.username = newName;
+                        localStorage.setItem(`lezy_user_${newName}`, JSON.stringify(currentUser));
+                        localStorage.setItem('lezy_bot_session', newName);
+                        
+                        executeBotReply(`💳 TRANSAKSI BERHASIL!\n\nIdentitas Anda sukses diubah secara acak menjadi: ${newName}`);
+                    } else {
+                        executeBotReply("❌ TRANSAKSI GAGAL!\n\nBiaya administrasi 100 Koin tidak mencukupi.");
+                    }
+                    break;
+                default:
+                    executeBotReply("Nomor item toko tidak valid.");
+                    break;
+            }
+            syncDB();
+        }
+
+        // ==========================================================================
+        // SYSTEM LOGIC FOR FULLSCREEN CONTROLLER
+        // ==========================================================================
+        btnFullscreenToggle.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                // Memicu web masuk ke mode fullscreen murni bawaan browser
+                document.documentElement.requestFullscreen()
+                    .then(() => {
+                        document.body.classList.add('clean-fullscreen');
+                        fsIcon.textContent = "📴";
+                        fsText.textContent = "Keluar Layar Penuh";
+                    })
+                    .catch(err => {
+                        console.log(`Error gagal masuk mode fullscreen: ${err.message}`);
+                    });
+            } else {
+                // Keluar dari mode fullscreen murni
+                document.exitFullscreen();
+            }
+        });
+
+        // Event listener saat user keluar dari fullscreen menggunakan tombol ESC bawaan keyboard/sistem HP
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                document.body.classList.remove('clean-fullscreen');
+                fsIcon.textContent = "📺";
+                fsText.textContent = "Layar Penuh";
+            }
+        });
+    </script>
+</body>
+</html>
